@@ -2,9 +2,11 @@ import axios from 'axios'
 const RickAndMorty = {
   namespaced: true,
   state: {
-    prefixUrlRickAndMorty: 'https://rickandmortyapi.com/api/character',
+    prefixUrlRickAndMortyCharacter: 'https://rickandmortyapi.com/api/character',
+    prefixUrlRickAndMortyEpisode: 'https://rickandmortyapi.com/api/episode',
     caracters: [],
     caracter: {},
+    episodes: {},
     prevApiRequest: null,
     nextApiRequest: null,
     totalPagesRequest: 1,
@@ -12,7 +14,8 @@ const RickAndMorty = {
     nameSearch: null,
     statusSearch: 'all',
     showLoadingSpinner: false,
-    dialogVisible: false
+    dialogVisible: false,
+    backPage: false
   },
   getters: {
     caracters: (state) => {
@@ -28,6 +31,12 @@ const RickAndMorty = {
     },
     SET_CARACTER (state, caracter) {
       state.caracter = caracter
+    },
+    SET_EPISODES (state, episode) {
+      state.episodes[episode.url] = episode.stringEp
+    },
+    CLEAR_EPISODES (state) {
+      state.episodes = {}
     },
     SET_CARACTERS_NAME_SEARCH (state, nameSearch) {
       state.nameSearch = nameSearch
@@ -52,11 +61,14 @@ const RickAndMorty = {
     },
     SET_DIALOG_VISIBLE (state, dialogVisible) {
       state.dialogVisible = dialogVisible
+    },
+    SET_BACK_PAGE (state, backPage) {
+      state.backPage = backPage
     }
   },
   actions: {
     getCaracters (context, payload) {
-      const ApiCaracters = context.state.prefixUrlRickAndMorty
+      const ApiCaracters = context.state.prefixUrlRickAndMortyCharacter
       return new Promise((resolve, reject) => {
         axios.get(ApiCaracters)
         .then(c => {
@@ -75,7 +87,7 @@ const RickAndMorty = {
     },
     getCaractersByName (context, name) {
       const ApiStatusSearch = (context.state.statusSearch && context.state.statusSearch !== 'all') ? `/?status=${context.state.statusSearch}` : '/?'
-      const ApiCaracters = name ? `${context.state.prefixUrlRickAndMorty}${ApiStatusSearch}&name=${name}` : context.state.prefixUrlRickAndMorty
+      const ApiCaracters = name ? `${context.state.prefixUrlRickAndMortyCharacter}${ApiStatusSearch}&name=${name}` : context.state.prefixUrlRickAndMortyCharacter
       this.dispatch('RickAndMorty/setShowLoadingSpinner', true)
       this.dispatch('RickAndMorty/setCaractersNameSearch', name)
       this.dispatch('RickAndMorty/setActualPageSearch', 1)
@@ -104,7 +116,7 @@ const RickAndMorty = {
     },
     getCaractersByStatus (context, status) {
       const ApiNameSearch = context.state.nameSearch ? `/?name=${context.state.nameSearch}` : '/?'
-      const ApiCaracters = status === 'all' ? `${context.state.prefixUrlRickAndMorty}${ApiNameSearch}` : `${context.state.prefixUrlRickAndMorty}${ApiNameSearch}&status=${status}`
+      const ApiCaracters = status === 'all' ? `${context.state.prefixUrlRickAndMortyCharacter}${ApiNameSearch}` : `${context.state.prefixUrlRickAndMortyCharacter}${ApiNameSearch}&status=${status}`
       this.dispatch('RickAndMorty/setCaractersStatusSearch', status)
       this.dispatch('RickAndMorty/setShowLoadingSpinner', true)
       this.dispatch('RickAndMorty/setActualPageSearch', 1)
@@ -132,13 +144,28 @@ const RickAndMorty = {
       })
     },
     getCaracter (context, idCaracter) {
-      const ApiCaracter = `${context.state.prefixUrlRickAndMorty}/${idCaracter}`
+      const ApiCaracter = `${context.state.prefixUrlRickAndMortyCharacter}/${idCaracter}`
       return new Promise((resolve, reject) => {
         axios.get(ApiCaracter)
           .then(c => {
-            debugger
             const results = c.data
             this.dispatch('RickAndMorty/setCaracter', results)
+            resolve(results)
+        }).catch(error => {
+          console.log(error)
+          reject(error)
+        })
+      })
+    },
+    getSeasonEpFromApi (context, numberEpisode) {
+      const ApiCaracter = `${context.state.prefixUrlRickAndMortyEpisode}/${numberEpisode}`
+      if (context.state.episodes[ApiCaracter]) { return }
+      return new Promise((resolve, reject) => {
+        axios.get(ApiCaracter)
+          .then(c => {
+            const stringEp = c.data.episode.replace("S", "Temporada ").replace("E", " Episódio ")
+            const results = { url: c.data.url, stringEp }
+            this.dispatch('RickAndMorty/setEpisodes', results)
             resolve(results)
         }).catch(error => {
           console.log(error)
@@ -176,6 +203,12 @@ const RickAndMorty = {
     setCaracter (context, caracter) {
       context.commit('SET_CARACTER', caracter)
     },
+    setEpisodes (context, caracter) {
+      context.commit('SET_EPISODES', caracter)
+    },
+    clearEpisodes (context, caracter) {
+      context.commit('CLEAR_EPISODES', caracter)
+    },
     setTotalPagesRequest (context, totalPagesRequest) {
       context.commit('SET_TOTAL_PAGES_REQUEST', totalPagesRequest)
     },
@@ -193,6 +226,9 @@ const RickAndMorty = {
     },
     setDialogVisible (context, dataialogVisible) {
       context.commit('SET_DIALOG_VISIBLE', dataialogVisible)
+    },
+    setBackPage (context, backPage) {
+      context.commit('SET_BACK_PAGE', backPage)
     }
   }
 }

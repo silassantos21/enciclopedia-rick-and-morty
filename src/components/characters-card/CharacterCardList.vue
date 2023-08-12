@@ -20,10 +20,10 @@ export default {
 		};
 	},
   methods: {
-    ...mapActions('RickAndMorty', ['getCaracter']),
+    ...mapActions('RickAndMorty', ['getCaracter', 'setBackPage']),
     async toCharacter () {
-      debugger
       await this.getCaracter(this.details.id)
+	  this.setBackPage(true)
       this.$router.push('/character-details')
     }
   },

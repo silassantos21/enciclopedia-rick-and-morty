@@ -28,7 +28,6 @@ export default {
 		};
 	},
 	created() {
-    debugger
 		if (!this.caracter.id) {
       this.$router.push('/')
     }

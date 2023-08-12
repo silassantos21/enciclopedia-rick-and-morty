@@ -13,8 +13,6 @@
       <h4>Encontre seu personagem dos universos de Rick & Morty(em inglês)</h4>
       <input class="search-input" v-model="search" placeholder="Pesquisar(Ex: Rick, Morty...)" />
     </div>
-    
-    <div>Checked names: {{ selectedStatus }}</div>
     <div class="search-radio-status">
       <radio-inputs :options="radioOptions" @value="setStatusValue" />
     </div>
@@ -30,7 +28,7 @@
 </template>
 
 <script>
-import CharactersList from "@/components/characters-card/CharactersList_comp.vue";
+import CharactersList from "@/components/characters-card/CharactersList.vue";
 import { defineComponent, ref } from 'vue'
 import { mapState, mapActions } from 'vuex'
 export default defineComponent({
@@ -59,9 +57,10 @@ export default defineComponent({
     this.selectedStatus = this.statusSearch
     this.setDialogVisible(false)
     this.setShowLoadingSpinner(false)
+    this.clearEpisodes()
   },
   methods: {
-    ...mapActions('RickAndMorty', ['getCaractersByName', 'getCaractersByStatus', 'setShowLoadingSpinner', 'setDialogVisible', 'setCaractersStatusSearch']),
+    ...mapActions('RickAndMorty', ['getCaractersByName', 'getCaractersByStatus', 'setShowLoadingSpinner', 'setDialogVisible', 'setCaractersStatusSearch', 'clearEpisodes', 'setBackPage']),
     closeDialog() {
       this.setDialogVisible(false)
     },
@@ -70,12 +69,14 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapState('RickAndMorty', ['caracters', 'nameSearch', 'statusSearch', 'showLoadingSpinner', 'dialogVisible'])
+    ...mapState('RickAndMorty', ['caracters', 'nameSearch', 'statusSearch', 'showLoadingSpinner', 'dialogVisible', 'backPage'])
   },
   watch: {
     search (newValue, oldValue) {
       const nv = newValue
-      if (this.isFirstRequest || (newValue.length < 3 && newValue.length !== 0)) {
+      debugger
+      if (this.isFirstRequest || (newValue.length < 3 && newValue.length !== 0) || this.backPage) {
+        this.setBackPage(false)
         this.isFirstRequest = false
         return
       }

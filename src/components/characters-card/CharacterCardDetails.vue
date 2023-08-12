@@ -21,7 +21,7 @@
         <div class="episodes-scroll">
           <ul>
             <li v-for="(episode, index) in details.episode" :key="index">
-              {{ episode }}
+              {{ episodes[episode] }}
             </li>
           </ul>
         </div>
@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 export default {
 	props: {
 		details: {
@@ -43,7 +44,20 @@ export default {
 			status: this.details.status
 		};
 	},
+  mounted () {
+    this.details.episode.forEach(ep => {
+      this.numEpToSeasonEp(ep)
+    });
+  },
+  methods: {
+    ...mapActions('RickAndMorty', ['getSeasonEpFromApi', 'setShowLoadingSpinner']),
+    async numEpToSeasonEp (ApiEpisode) {
+      const ArrayEpisode = ApiEpisode.split("/")
+      await this.getSeasonEpFromApi(ArrayEpisode[ArrayEpisode.length - 1])
+    }
+  },
 	computed: {
+    ...mapState('RickAndMorty', ['episodes']),
 		statusColorR() {
 			if (this.status === "Dead") {
 				return 1;
