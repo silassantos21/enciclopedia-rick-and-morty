@@ -1,0 +1,179 @@
+$primary-color: #42b983;
+$disabled-color: #FFFFFF;
+
+.btn-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20;
+    margin-bottom: 12px;
+}
+
+.search-container {
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.search-input {
+  height: 50px;
+  margin-block: 10px;
+  width: 70%;
+  padding: 10px;
+  border-radius: 10px;
+  outline: none;
+}
+
+.search-radio-status {
+  display: inline-flex;
+  div {
+    margin-inline: 15px;
+  }
+  input[type="radio"] {
+    margin-right: 5px;
+    margin-left: 25px;
+    transform: scale(2);
+    height: 20px;
+  }
+  label {
+    font-size: 2vw;
+  }
+}
+
+.home-search-title {
+  font-size: 3vw;
+  margin-block: 10px;
+}
+
+.search-result {
+  margin-block: 5px;
+  padding-inline: 5px;
+}
+
+.material-icons {
+  font-size: 27px; /* Ajuste o tamanho do ícone */
+  vertical-align: middle; /* Alinhe verticalmente com o texto ao redor */
+}
+
+.search-empty {
+  margin-top: 15px;
+  display: inline-flex;
+  place-items: center;
+  display: inline-flex;
+  place-items: center;
+  justify-content: center;
+  border: 2px dotted #ccc;
+  width: 100%;
+  padding: 10px;
+  font-style: italic;
+}
+// Dialog
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 550px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  h2 {
+    font-weight: bold;
+    color: black;
+    font-size: 1.2em;
+    margin-left: auto !important;
+    margin-right: 20% !important;
+  }
+  i {
+    font-size: 25px;
+    color: #42b983;
+    margin-left: auto;
+    height: 26px;
+    cursor: pointer;
+  }
+}
+
+.dialog-header h2 {
+  margin: 0;
+}
+
+.dialog-content {
+  max-height: 550px;
+  overflow-y: auto;
+  display: inline-grid;
+  color: black;
+  font-size: 1.2em;
+  button {
+    background: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    box-shadow: rgb(255 255 255 / 10%) 1px 2px;
+    color: $primary-color;
+    margin-top: 10px;
+  }
+}
+
+.img-dialog {
+  max-width: 100%; /* Garanta que a imagem não ultrapasse a largura do diálogo */
+  max-height: 80vh; /* Defina uma altura máxima para a imagem */
+  margin: 0 auto;
+}
+
+button {
+  background: $primary-color;
+  border: 1px solid $primary-color;
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: nunito,roboto,proxima-nova,"proxima nova",sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 16px;
+  min-height: 40px;
+  margin-right: 5px;
+  outline: 0;
+  padding: 12px 14px;
+  text-align: center;
+  text-rendering: geometricprecision;
+  text-transform: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+}
+
+button:disabled {
+  background-color: #CCC !important;
+  border: 0px !important;
+  color: #626262;
+  cursor: not-allowed;
+}
+
+button:active {
+  opacity: .5;
+}
+
+button:disabled {
+  background: $disabled-color;
+  border: 1px solid $disabled-color;
+}
