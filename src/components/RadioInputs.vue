@@ -12,29 +12,29 @@
 </template>
 
 <script>
-import { ref } from 'vue';
-import { mapState } from 'vuex'
+import { defineComponent, ref, onMounted, watch } from 'vue';
+import { useStore } from 'vuex';
 
-export default {
+export default defineComponent({
   props: {
     options: Array,
   },
-  setup(props) {
+  setup(props, { emit }) {
+    const store = useStore();
+    const statusSearch = store.state.RickAndMorty.statusSearch
+    const selectedOption = ref(null);
+
+    onMounted(() => {
+      selectedOption.value = statusSearch
+    });
+
+    watch(selectedOption, (newValue) => {
+      emit('value', newValue);
+    });
 
     return {
-      selectedOption: ref(null),
+      selectedOption,
     };
   },
-  mounted () {
-    this.selectedOption = this.statusSearch
-  },
-  computed: {
-    ...mapState('RickAndMorty', ['statusSearch'])
-  },
-  watch: {
-    selectedOption (newValue) {
-      this.$emit('value', newValue)
-    }
-  }
-};
+});
 </script>

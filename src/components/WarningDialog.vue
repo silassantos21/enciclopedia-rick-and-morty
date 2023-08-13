@@ -15,17 +15,22 @@
 </template>
 
 <script>
-export default {
+import { defineComponent } from 'vue';
+export default defineComponent({
   props: {
     visible: Boolean,
     title: String,
   },
-  methods: {
-    closeDialog() {
-      this.$emit('closeDialog', false);
-    },
-  },
-};
+  setup(props, { emit }) {
+    const closeDialog = () => {
+      emit('closeDialog', false);
+    }
+
+    return {
+      closeDialog
+    }
+  }
+});
 </script>
 
 <style scoped>

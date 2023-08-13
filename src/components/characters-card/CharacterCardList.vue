@@ -6,45 +6,31 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
-export default {
-	props: {
+import { defineComponent } from 'vue'
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router';
+export default defineComponent ({
+  props: {
 		details: {
 			type: Object,
 			required: true
 		}
 	},
-	data() {
-		return {
-			status: this.details.status
-		};
-	},
-  methods: {
-    ...mapActions('RickAndMorty', ['getCaracter', 'setBackPage']),
-    async toCharacter () {
-      await this.getCaracter(this.details.id)
-	  this.setBackPage(true)
-      this.$router.push('/character-details')
+  setup (props) {
+    const store = useStore()
+    const router = useRouter()
+
+    const toCharacter = async () => {
+      await store.dispatch('RickAndMorty/getCaracter', props.details.id)
+      store.dispatch('RickAndMorty/setBackPage', true)
+      router.push('/character-details')
     }
-  },
-	computed: {
-		statusColorR() {
-			if (this.status === "Dead") {
-				return 1;
-			} else return 0;
-		},
-		statusColorG() {
-			if (this.status === "Alive") {
-				return 1;
-			} else return 0;
-		},
-    statusColorC() {
-			if (this.status === "unknown") {
-				return 1;
-			} else return 0;
-		}
-	}
-};
+
+    return {
+      toCharacter
+    }
+  }
+})
 </script>
 
 <style lang="scss">

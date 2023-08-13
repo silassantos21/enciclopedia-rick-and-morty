@@ -21,6 +21,24 @@ const RickAndMorty = {
     caracters: (state) => {
       return state.caracters
     },
+    nameSearch: (state) => {
+      return state.nameSearch
+    },
+    statusSearch: (state) => {
+      return state.statusSearch
+    },
+    showLoadingSpinner: (state) => {
+      return state.showLoadingSpinner
+    },
+    dialogVisible: (state) => {
+      return state.dialogVisible
+    },
+    backPage: (state) => {
+      return state.backPage
+    },
+    statusSearch: (state) => {
+      return state.statusSearch
+    },
     actualPageSearch: (state) => {
       return state.actualPageSearch
     }
@@ -34,9 +52,6 @@ const RickAndMorty = {
     },
     SET_EPISODES (state, episode) {
       state.episodes[episode.url] = episode.stringEp
-    },
-    CLEAR_EPISODES (state) {
-      state.episodes = {}
     },
     SET_CARACTERS_NAME_SEARCH (state, nameSearch) {
       state.nameSearch = nameSearch
@@ -64,49 +79,26 @@ const RickAndMorty = {
     },
     SET_BACK_PAGE (state, backPage) {
       state.backPage = backPage
+    },
+    CLEAR_EPISODES (state) {
+      state.episodes = {}
     }
   },
   actions: {
-    getCaracters (context, payload) {
-      const ApiCaracters = context.state.prefixUrlRickAndMortyCharacter
-      return new Promise((resolve, reject) => {
-        axios.get(ApiCaracters)
-        .then(c => {
-          const results = c.data.results
-          this.dispatch('RickAndMorty/setCaracters', c.data.results)
-          this.dispatch('RickAndMorty/setTotalPagesRequest', c.data.info.pages)
-          this.dispatch('RickAndMorty/setPrevApiRequest', c.data.info.prev)
-          this.dispatch('RickAndMorty/setNextApiRequest', c.data.info.next)
-          resolve(results)
-        }).catch(error => {
-          console.log(error)
-          reject(error)
-          return []
-        })
-      })
-    },
     getCaractersByName (context, name) {
       const ApiStatusSearch = (context.state.statusSearch && context.state.statusSearch !== 'all') ? `/?status=${context.state.statusSearch}` : '/?'
-      const ApiCaracters = name ? `${context.state.prefixUrlRickAndMortyCharacter}${ApiStatusSearch}&name=${name}` : context.state.prefixUrlRickAndMortyCharacter
+      const ApiCaracters = name ? `${context.state.prefixUrlRickAndMortyCharacter}${ApiStatusSearch}&name=${name}` : `${context.state.prefixUrlRickAndMortyCharacter}${ApiStatusSearch}`
       this.dispatch('RickAndMorty/setShowLoadingSpinner', true)
       this.dispatch('RickAndMorty/setCaractersNameSearch', name)
       this.dispatch('RickAndMorty/setActualPageSearch', 1)
       return new Promise((resolve, reject) => {
         axios.get(ApiCaracters)
         .then(c => {
-          const results = c.data.results
-          this.dispatch('RickAndMorty/setCaracters', c.data.results)
-          this.dispatch('RickAndMorty/setTotalPagesRequest', c.data.info.pages)
-          this.dispatch('RickAndMorty/setPrevApiRequest', c.data.info.prev)
-          this.dispatch('RickAndMorty/setNextApiRequest', c.data.info.next)
-          resolve(results)
+          this.dispatch('RickAndMorty/setCharactersLayoutDetails', c.data)
+          resolve(c.data.results)
         }).catch(error => {
           console.log(error)
-          this.dispatch('RickAndMorty/setCaracters', [])
-          this.dispatch('RickAndMorty/setTotalPagesRequest', 1)
-          this.dispatch('RickAndMorty/setPrevApiRequest', null)
-          this.dispatch('RickAndMorty/setNextApiRequest', null)
-          this.dispatch('RickAndMorty/setDialogVisible', true)
+          this.dispatch('RickAndMorty/clearCharacters')
           reject(error)
           return []
         }).finally(() => {
@@ -117,25 +109,17 @@ const RickAndMorty = {
     getCaractersByStatus (context, status) {
       const ApiNameSearch = context.state.nameSearch ? `/?name=${context.state.nameSearch}` : '/?'
       const ApiCaracters = status === 'all' ? `${context.state.prefixUrlRickAndMortyCharacter}${ApiNameSearch}` : `${context.state.prefixUrlRickAndMortyCharacter}${ApiNameSearch}&status=${status}`
-      this.dispatch('RickAndMorty/setCaractersStatusSearch', status)
       this.dispatch('RickAndMorty/setShowLoadingSpinner', true)
+      this.dispatch('RickAndMorty/setCaractersStatusSearch', status)
       this.dispatch('RickAndMorty/setActualPageSearch', 1)
       return new Promise((resolve, reject) => {
         axios.get(ApiCaracters)
         .then(c => {
-          const results = c.data.results
-          this.dispatch('RickAndMorty/setCaracters', c.data.results)
-          this.dispatch('RickAndMorty/setTotalPagesRequest', c.data.info.pages)
-          this.dispatch('RickAndMorty/setPrevApiRequest', c.data.info.prev)
-          this.dispatch('RickAndMorty/setNextApiRequest', c.data.info.next)
-          resolve(results)
+          this.dispatch('RickAndMorty/setCharactersLayoutDetails', c.data)
+          resolve(c.data.results)
         }).catch(error => {
           console.log(error)
-          this.dispatch('RickAndMorty/setCaracters', [])
-          this.dispatch('RickAndMorty/setTotalPagesRequest', 1)
-          this.dispatch('RickAndMorty/setPrevApiRequest', null)
-          this.dispatch('RickAndMorty/setNextApiRequest', null)
-          this.dispatch('RickAndMorty/setDialogVisible', true)
+          this.dispatch('RickAndMorty/clearCharacters')
           reject(error)
           return []
         }).finally(() => {
@@ -162,8 +146,8 @@ const RickAndMorty = {
       if (context.state.episodes[ApiCaracter]) { return }
       return new Promise((resolve, reject) => {
         axios.get(ApiCaracter)
-          .then(c => {
-            const stringEp = c.data.episode.replace("S", "Temporada ").replace("E", " Episódio ")
+        .then(c => {
+            const stringEp = c.data.episode.replace("S", "Temporada ").replace("E", " - Episódio ")
             const results = { url: c.data.url, stringEp }
             this.dispatch('RickAndMorty/setEpisodes', results)
             resolve(results)
@@ -174,20 +158,19 @@ const RickAndMorty = {
       })
     },
     getActualPage (context, pageType) {
-      const ApiCaractersNewPage = pageType === 'prev' ? context.state.prevApiRequest : context.state.nextApiRequest 
+      const ApiCaractersNewPage = pageType === 'prev' ? context.state.prevApiRequest : context.state.nextApiRequest
+      this.dispatch('RickAndMorty/setShowLoadingSpinner', true)
       return new Promise((resolve, reject) => {
         axios.get(ApiCaractersNewPage)
         .then(c => {
-          const results = c.data.results
-          this.dispatch('RickAndMorty/setCaracters', c.data.results)
-          this.dispatch('RickAndMorty/setTotalPagesRequest', c.data.info.pages)
-          this.dispatch('RickAndMorty/setPrevApiRequest', c.data.info.prev)
-          this.dispatch('RickAndMorty/setNextApiRequest', c.data.info.next)
-          resolve(results)
+          this.dispatch('RickAndMorty/setCharactersLayoutDetails', c.data)
+          resolve(c.data.results)
         }).catch(error => {
           console.log(error)
           reject(error)
           return []
+        }).finally(() => {
+          this.dispatch('RickAndMorty/setShowLoadingSpinner', false)
         })
       })
     },
@@ -200,14 +183,17 @@ const RickAndMorty = {
     setCaractersStatusSearch (context, statusSearch) {
       context.commit('SET_CARACTERS_STATUS_SEARCH', statusSearch)
     },
+    setCharactersLayoutDetails (context, layoutDetails) {
+      this.dispatch('RickAndMorty/setCaracters', layoutDetails.results)
+      this.dispatch('RickAndMorty/setTotalPagesRequest', layoutDetails.info.pages)
+      this.dispatch('RickAndMorty/setPrevApiRequest', layoutDetails.info.prev)
+      this.dispatch('RickAndMorty/setNextApiRequest', layoutDetails.info.next)
+    },
     setCaracter (context, caracter) {
       context.commit('SET_CARACTER', caracter)
     },
     setEpisodes (context, caracter) {
       context.commit('SET_EPISODES', caracter)
-    },
-    clearEpisodes (context, caracter) {
-      context.commit('CLEAR_EPISODES', caracter)
     },
     setTotalPagesRequest (context, totalPagesRequest) {
       context.commit('SET_TOTAL_PAGES_REQUEST', totalPagesRequest)
@@ -229,6 +215,16 @@ const RickAndMorty = {
     },
     setBackPage (context, backPage) {
       context.commit('SET_BACK_PAGE', backPage)
+    },
+    clearEpisodes (context, caracter) {
+      context.commit('CLEAR_EPISODES', caracter)
+    },
+    clearCharacters () {
+      this.dispatch('RickAndMorty/setCaracters', [])
+      this.dispatch('RickAndMorty/setTotalPagesRequest', 1)
+      this.dispatch('RickAndMorty/setPrevApiRequest', null)
+      this.dispatch('RickAndMorty/setNextApiRequest', null)
+      this.dispatch('RickAndMorty/setDialogVisible', true)
     }
   }
 }

@@ -13,58 +13,68 @@
 <script>
 // @ is an alias to /src
 import CharacterCardList from "@/components/characters-card/CharacterCardList.vue";
-import { mapState, mapActions } from 'vuex'
-//import axios from 'axios'
-export default {
-	//props: ["page"],
-	name: "CharactersList",
-	components: {
-		CharacterCardList
-	},
-  computed: {
-    ...mapState('RickAndMorty', ['caracters', 'totalPagesRequest', 'actualPageSearch']),
-    details: {
-      get () {
-        return this.$store.getters['RickAndMorty/caracters']
-      },
-      set (value) {
-        this.$store.dispatch('RickAndMorty/setCaracters', value)
-      }
-    },
-    page: {
-      get () {
-        return this.$store.getters['RickAndMorty/actualPageSearch']
-      },
-      set (value) {
-        this.$store.dispatch('RickAndMorty/setActualPageSearch', value)
+import { ref, defineComponent, computed } from 'vue'
+import { useStore } from 'vuex'
+
+export default defineComponent({
+  name: "CharactersList",
+  components: {
+    CharacterCardList
+  },
+  setup () {
+    const store = useStore()
+
+    const caracters = store.state.RickAndMorty.caracters
+    const totalPagesRequest = store.state.RickAndMorty.totalPagesRequest
+    const actualPageSearch = store.state.RickAndMorty.actualPageSearch
+
+    const getPage = async (pageType) => {
+      try {
+        const response = await store.dispatch('RickAndMorty/getActualPage', pageType);
+        details = response;
+      } catch (error) {
+        console.log(error);
       }
     }
-  },
-	methods: {
-    ...mapActions('RickAndMorty', ['getCaracters', 'getActualPage', 'setShowLoadingSpinner', 'setActualPageSearch']),
-		nextPage () {
-			this.page++;
-			this.getPage('next');
-		},
-		prevPage () {
-			this.page < 2 ? this.page : this.page--;
-			this.getPage('prev');
-		},
-		getPage (pageType) {
-      this.setShowLoadingSpinner(true)
-			this.getActualPage(pageType)
-				.then((response) => {
-					//console.log("details:", response);
-					this.details = response;
-				})
-				.catch((error) => {
-					console.log(error);
-				}).finally(() => {
-          this.setShowLoadingSpinner(false)
-        })
-		}
-	}
-};
+
+    const nextPage = () => {
+      store.dispatch('RickAndMorty/setActualPageSearch', (page.value + 1));
+ 			getPage('next');
+    }
+    const prevPage = () => {
+      page < 2 ? page : store.dispatch('RickAndMorty/setActualPageSearch', (page.value - 1));
+ 			getPage('prev');
+    }
+
+    let details = computed({
+      get: () => {
+        return store.getters['RickAndMorty/caracters'];
+      },
+      set: (newValue) => {
+        store.dispatch('RickAndMorty/setCaracters', newValue);
+      }
+    });
+    let page = computed({
+      get: () => {
+        return store.getters['RickAndMorty/actualPageSearch'];
+      },
+      set: (newValue) => {
+        store.dispatch('RickAndMorty/setActualPageSearch', newValue);
+      }
+    });
+
+    return {
+      caracters,
+      totalPagesRequest,
+      actualPageSearch,
+      details,
+      page,
+      getPage,
+      nextPage,
+      prevPage
+    }
+  }
+})
 </script>
 
 <style lang="scss">

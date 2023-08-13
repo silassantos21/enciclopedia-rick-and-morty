@@ -5,7 +5,7 @@
         <button @click="toHome"><i class="material-icons">arrow_back</i>Home</button>
         <h1 class="home-search-title">Detalhes do Personagem </h1>
       </div>
-      <CharacterCardDetails :details="caracter" />
+      <CharacterCardDetails />
     </div>
   </div>
 </template>
@@ -13,34 +13,42 @@
 <script>
 // @ is an alias to /src
 import CharacterCardDetails from "@/components/characters-card/CharacterCardDetails.vue";
-import { mapState, mapActions } from 'vuex'
-//import axios from 'axios'
-export default {
-	//props: ["page"],
-	name: "CharactersList",
+import { defineComponent, ref, onBeforeMount } from "vue";
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+
+export default defineComponent({
+  name: "CharactersList",
 	components: {
 		CharacterCardDetails
 	},
-	data() {
-		return {
-			details: null,
-			page: 1
-		};
-	},
-	created() {
-		if (!this.caracter.id) {
-      this.$router.push('/')
+  setup () {
+    const store = useStore()
+    const router = useRouter()
+
+    const caracter = store.state.RickAndMorty.caracter
+
+    const details = ref(null)
+    const page = ref(1)
+
+    const toHome = () => {
+      router.push('/')
     }
-	},
-  computed: {
-    ...mapState('RickAndMorty', ['caracter'])
-  },
-	methods: {
-    toHome () {
-      this.$router.push('/')
+
+    onBeforeMount(() => {
+      if (!caracter.id) {
+        router.push('/')
+      }
+    })
+
+    return {
+      details,
+      caracter,
+      page,
+      toHome
     }
-	}
-};
+  }
+})
 </script>
 
 <style lang="scss">

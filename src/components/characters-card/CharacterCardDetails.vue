@@ -31,50 +31,53 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
-export default {
-	props: {
-		details: {
-			type: Object,
-			required: true
-		}
-	},
-	data() {
-		return {
-			status: this.details.status
-		};
-	},
-  mounted () {
-    this.details.episode.forEach(ep => {
-      this.numEpToSeasonEp(ep)
-    });
-  },
-  methods: {
-    ...mapActions('RickAndMorty', ['getSeasonEpFromApi', 'setShowLoadingSpinner']),
-    async numEpToSeasonEp (ApiEpisode) {
-      const ArrayEpisode = ApiEpisode.split("/")
-      await this.getSeasonEpFromApi(ArrayEpisode[ArrayEpisode.length - 1])
+import { defineComponent, ref, onMounted, computed } from 'vue'
+import { useStore } from 'vuex'
+export default defineComponent ({
+  setup () {
+    const store = useStore()
+    const episodes = store.state.RickAndMorty.episodes
+    const details = store.state.RickAndMorty.caracter
+    const status = ref(details.status)
+
+    const numEpToSeasonEp = async (apiEpisode) => {
+      const ArrayEpisode = apiEpisode.split("/")
+      await store.dispatch('RickAndMorty/getSeasonEpFromApi', ArrayEpisode[ArrayEpisode.length - 1]);
     }
-  },
-	computed: {
-    ...mapState('RickAndMorty', ['episodes']),
-		statusColorR() {
-			if (this.status === "Dead") {
-				return 1;
-			} else return 0;
-		},
-		statusColorG() {
-			if (this.status === "Alive") {
-				return 1;
-			} else return 0;
-		},
-    statusColorC() {
-			if (this.status === "unknown") {
-				return 1;
-			} else return 0;
-		}
-	}
-};
+
+    onMounted (() => {
+      details.episode.forEach(ep => {
+        numEpToSeasonEp(ep)
+      });
+    })
+
+    const statusColorR = computed(() => {
+      if (status.value === "Dead") {
+ 				return 1;
+ 			} else return 0;
+    })
+    const statusColorG = computed(() => {
+      if (status.value === "Alive") {
+ 				return 1;
+ 			} else return 0;
+    })
+    const statusColorC = computed(() => {
+      if (status.value === "unknown") {
+ 				return 1;
+ 			} else return 0;
+    })
+
+    return {
+      status,
+      details,
+      episodes,
+      statusColorR,
+      statusColorG,
+      statusColorC,
+      numEpToSeasonEp
+    }
+  }
+})
 </script>
 
 <style lang="scss">
@@ -113,6 +116,10 @@ export default {
   overflow-y: auto;
   max-height: 100px;
   width: 370px;
+  margin-left: 10px;
+  ul {
+    display: contents;
+  }
 }
 .status-icon-r,
 .status-icon-c,
